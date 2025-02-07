@@ -4,8 +4,8 @@
 
 ---
 
-**Schema(file.js):**
-```
+### Schema(file.js):
+```js
 const mongoose = require('mongoose');
 
 const FileSchema = mongoose.Schema({
@@ -35,8 +35,8 @@ MongoDBcompass will creates a collection name in lowercase with an "s" at the en
 
 ---
 
-**upload_Routes.js:**
-```
+### upload_Routes.js:
+```js
 const router = require('express').Router();
 const multer = require('multer');
 const File = require('../models/file');
@@ -47,6 +47,10 @@ const upload = multer({ storage: storage });
 router.post('/upload', (req, res) => {
     upload.array('files', 10)(req, res, async function (err) {
         try {
+            console.log(err)
+            if (err instanceof multer.MulterError && err.code === 'LIMIT_UNEXPECTED_FILE')
+                return res.status(400).json({ message: "Maximum upload limit is 10 files." })
+
             if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No file uploaded' });
 
             // create object for each file
@@ -95,3 +99,9 @@ file accepted with ```.toString('utf-8')```:
 ✅ .csv
 ✅ .xml
 
+### 🔹 What Happens When Uploading More Than 10 Files?
+- If you select **more than 10 files**, Multer will **immediately reject the request** and return an **error**.
+- **None** of the files will be uploaded or saved to the database.
+- The server will respond with:
+  ```json
+  { "message": "Maximum upload limit is 10 files." }
