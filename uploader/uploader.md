@@ -2,6 +2,8 @@
 
 **first i used multer**: Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
 
+---
+
 **Schema(file.js):**
 ```
 const mongoose = require('mongoose');
@@ -30,6 +32,8 @@ module.exports = File
 ```
 
 MongoDBcompass will creates a collection name in lowercase with an "s" at the end(if i named it in singular, <ins>ex:</ins> filemodels), displaying(name, contentType, text and uploadedAt) 
+
+---
 
 **upload_Routes.js:**
 ```
@@ -78,9 +82,16 @@ Wrapping ```upload.array('files', 10)``` inside a function lets me catch Multers
 
 Because when i put it like this ```router.post('/upload', upload.array('files', 10), async (req, res) => { ... });```, Multer (in this case it's a middleware) processes the request before it reaches your try-catch block (errorMessage: Unexpected end of form )
 
-```mime.type:``` Checks the type of  file <ins>ex</ins> text-based (text/plain, text/html, etc.).
+```mime.type:``` Checks the type of  file <ins>ex:</ins> text-based (text/plain, text/html, etc.).
 
-A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer in memory instead of being written to disk
+A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer format in memory instead of being written to disk
 
-Extracts text from the file buffer using ```.toString('utf-8')```, So we can convert the buffer to a string
+Extracts text from the file buffer using ```.toString('utf-8')```, So we can convert the buffer to a string.
+
+file accepted with ```.toString('utf-8')```:  
+✅ .txt
+✅ .html
+✅ .json
+✅ .csv
+✅ .xml
 
