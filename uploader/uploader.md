@@ -55,12 +55,12 @@ router.post('/upload', (req, res) => {
 
             // create object for each file
             const fileDocs = req.files.map(file => {
-                let extractedText = '';
-
-                if (file.mimetype.startsWith('text/'))
-                    extractedText = file.buffer.toString('utf-8');
-                else
-                    extractedText = '[Binary file: Content not extracted]';
+                let extractedText = file.mimetype.startsWith('text/') ? file.buffer.toString('utf-8') : '[Binary file]';
+                // let extractedText = '';
+                // if (file.mimetype.startsWith('text/'))
+                //     extractedText = file.buffer.toString('utf-8');
+                // else
+                //     extractedText = '[Binary file: Content not extracted]';
 
                 return {
                     name: file.originalname,
