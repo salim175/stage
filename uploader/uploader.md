@@ -86,6 +86,14 @@ Wrapping ```upload.array('files', 10)``` inside a function lets me catch Multers
 
 Because when i put it like this ```router.post('/upload', upload.array('files', 10), async (req, res) => { ... });```, Multer (in this case it's a middleware) processes the request before it reaches your try-catch block (errorMessage: Unexpected end of form )
 
+### 🔹 What Happens When Uploading More Than 10 Files?
+- If you select **more than 10 files**, Multer will **immediately reject the request** and return an **error(Unexpected field)**, this error have a ``code: 'LIMIT_UNEXPECTED_FILE'``
+- **None** of the files will be uploaded or saved to the database.
+- The server will respond with:
+  ```json
+  { "message": "Maximum upload limit is 10 files." }
+  ```
+
 ```mime.type:``` Checks the type of  file <ins>ex:</ins> text-based (text/plain, text/html, etc.).
 
 A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer format in memory instead of being written to disk
@@ -98,10 +106,3 @@ file accepted with ```.toString('utf-8')```:
 ✅ .json
 ✅ .csv
 ✅ .xml
-
-### 🔹 What Happens When Uploading More Than 10 Files?
-- If you select **more than 10 files**, Multer will **immediately reject the request** and return an **error**.
-- **None** of the files will be uploaded or saved to the database.
-- The server will respond with:
-  ```json
-  { "message": "Maximum upload limit is 10 files." }
