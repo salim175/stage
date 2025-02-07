@@ -2,7 +2,7 @@
 
 **first i used multer**: Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
 
-## Schema(file.js):
+**Schema(file.js):**
 ```
 const mongoose = require('mongoose');
 
@@ -29,9 +29,9 @@ const File = mongoose.model('filemodels', FileSchema);
 module.exports = File
 ```
 
-MongoDBcompass will creates a collection name in lowercase with an "s" at the end (filemodels), displaying(name, contentType, text and uploadedAt) 
+MongoDBcompass will creates a collection name in lowercase with an "s" at the end(if i named it in singular, <ins>ex:</ins> filemodels), displaying(name, contentType, text and uploadedAt) 
 
-## upload_Routes.js:
+**upload_Routes.js:**
 ```
 const router = require('express').Router();
 const multer = require('multer');
@@ -80,7 +80,7 @@ Because when i put it like this ```router.post('/upload', upload.array('files', 
 
 ```mime.type:``` Checks if the file is text-based (text/plain, text/html, etc.).
 
-A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer in memory instead of being written to disk.
+A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer in memory instead of being written to disk
 
-Extracts text from the file buffer using ```.toString('utf-8')```, So we can convert the buffer to a string.
+Extracts text from the file buffer using ```.toString('utf-8')```, So we can convert the buffer to a string
 
