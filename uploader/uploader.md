@@ -154,6 +154,8 @@ upload.array('files', 10)(req, res, async function (err) {
   { "message": "Maximum upload limit is 10 files." }
   ```
 
+---
+
 ```.mimetype:``` Checks the type of  file <ins>ex:</ins> text-based (text/plain, text/html, etc.).
 
 A ```Buffer``` in Node.js is a temporary storage for binary data, When you upload a file using Multer, the file is temporarily stored as a binary buffer format in memory instead of being written to disk
@@ -190,6 +192,8 @@ Extracts a specific email field (`From`, `Date`, `Subject`, `To`) from an array 
 3. **Returning the extracted value**, or `'unknown'` if not found.
 
 ⚡ Efficient, reusable, and safe with optional chaining (`?.`). 🚀
+
+---
 
 ### 📌 splitMail Explanation
 Since ```.split()``` only works on strings, but convertedMail is an array, we use ```.join("\n")``` to convert the array into a single string before applying ```.split()```.
