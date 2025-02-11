@@ -185,13 +185,15 @@ it's return an array because of ```.map()```
 
 ---
 
-### 📌 extractField Function Explanation
-Extracts a specific email field (`From`, `Date`, `Subject`, `To`) from an array by:
-1. **Finding the first match** using a dynamic regex.
-2. **Capturing the value** after `:` and trimming spaces.
-3. **Returning the extracted value**, or `'unknown'` if not found.
+### `extractField` Function
+Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Body`) from an array of email lines.
 
-⚡ Efficient, reusable, and safe with optional chaining (`?.`). 🚀
+- Since `convertedMail` is an **array**, `.find()` **iterates through each element** and checks if it matches the field using regex.
+- If a match is found, `.match(regex)` extracts the value after `:` and trims spaces.
+- The optional chaining `?.` prevents errors if no match is found.
+- Returns `'unknown'` if the field does not exist.
+
+✅ **Because `convertedMail` is an array, `.find()` stops at the first match, making it efficient!** 🚀
 
 ---
 
