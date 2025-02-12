@@ -9,20 +9,12 @@
 const mongoose = require('mongoose');
 
 const FileSchema = mongoose.Schema({
-    name: {
+    _id: {
         type: String,
         required: true
     },
     contentType: {
         type: String,
-        required: true
-    },
-    mail: {
-        type: String,
-        required: true
-    },
-    conv_paragraph: {
-        type: [String], // it's an array
         required: true
     },
     from: {
@@ -53,6 +45,7 @@ const FileSchema = mongoose.Schema({
 
 const File = mongoose.model('filemodel', FileSchema);
 module.exports = File
+
 ```
 
 MongoDBcompass will creates a collection name in lowercase with an "s" at the end(if i named it in singular, <ins>ex:</ins> filemodel).
@@ -64,6 +57,7 @@ MongoDBcompass will creates a collection name in lowercase with an "s" at the en
 const router = require('express').Router();
 const multer = require('multer');
 const { convert } = require('html-to-text');
+const moment = require('moment-timezone');
 
 const File = require('../models/file');
 
@@ -101,24 +95,39 @@ router.post('/upload', (req, res) => {
                 const subjectField = extractField(convertedMail, 'Subject');
                 const toField = extractField(convertedMail, 'To');
 
+                // convert the date
+                const timestamp = moment.tz(dateField, "DD MMM YYYY HH:mm", "Europe/Paris").unix();
+
+                // extract the Body field
                 const splitMail = convertedMail.join("\n").split(/To:.*?\n([\s\S]*)/i);
-                const bodyField = splitMail.length > 1 ? splitMail[1].trim() : 'No body found';
+                const bodyField = splitMail.length > 1
+                    ? splitMail[1].replace(/>\s*/g, '').trim()
+                    : 'No body found';
+
+                // the regex is only to remove the last extension (.txt, .html )
+                const new_id = file.originalname.replace(/\.[^.]+$/, '');
 
                 return {
-                    name: file.originalname,
+                    _id: new_id,
                     contentType: file.mimetype,
-                    mail: mailAbuse,
-                    conv_paragraph: convertedMail,
                     from: fromField,
-                    date: dateField,
+                    date: timestamp,
                     subject: subjectField,
                     to: toField,
                     body: bodyField
                 }
             });
 
-            // save to mongoDB
-            await File.insertMany(fileDocs);
+            try {
+                // skip duplicates → Using { ordered: false }, MongoDB continues inserting even if some _ids already exist.
+                await File.insertMany(fileDocs, { ordered: false });
+            } catch (error) {
+                if (error.code === 11000) {
+                    console.log("Duplicate _id detected. Some emails were skipped.");
+                } else {
+                    throw error;
+                }
+            }
 
             res.status(200).json({ message: 'Files uploaded successfuly', files: req.files.length });
         } catch (error) {
@@ -177,7 +186,7 @@ file accepted with ```.toString('utf-8')```:
 it's  return an array because of ```.match()```
 
 ---
-### Convert() function
+### 📌 Convert() function
 
 Converts each extracted HTML **blockquote** into plain text using the ```convert()``` function (**html-to-text** package).
 
@@ -185,7 +194,7 @@ it's return an array because of ```.map()```
 
 ---
 
-### `extractField` Function
+### 📌 `extractField` function
 Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Body`) from an array of email lines.
 
 - Since `convertedMail` is an **array**, `.find()` **iterates through each element** and checks if it matches the field using regex.
@@ -198,8 +207,25 @@ Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Body`) from a
 ---
 
 ### 📌 splitMail Explanation
-Since ```.split()``` only works on strings, but convertedMail is an array, we use ```.join("\n")``` to convert the array into a single string before applying ```.split()```.
+Since ``.split()`` only works on strings, but convertedMail is an array, we use ``.join("\n")`` to convert the array into a single string before applying ```.split()```.
 
-```splitMail[0]``` → Everything before "To:" (headers).
+``splitMail[0]`` → Everything before "To:" (headers).
 
-```splitMail[1]``` → Everything after "To:" (the email body).
+``splitMail[1]`` → Everything after "To:" (the email body).
+
+---
+
+### 📌 save data in database
+1️⃣ MongoDB tries to insert all documents in fileDocs at once using ``insertMany``.
+
+2️⃣ If a document has a duplicate _id, it skips that document but continues inserting others. ✅
+
+3️⃣ Even though some files are inserted successfully, At the end of the insertion process, MongoDB throws error E11000 if it detects duplicates. ❌
+
+4️⃣ The execution jumps to the catch block and logs "Duplicate _id detected. Some emails were skipped."
+
+5️⃣ Final result:
+
+- New (unique) files are inserted into the database.
+- Duplicate files are skipped (not inserted).
+- Error 11000 is thrown, and the catch block handles it.
