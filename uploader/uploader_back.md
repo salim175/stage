@@ -1,4 +1,4 @@
-```ts
+```js
 <template>
   <div>
     <v-row>
