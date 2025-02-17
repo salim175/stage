@@ -95,7 +95,8 @@
 - ``:error-messages="errorMessage"`` displays error messages.
 - ``@on-update:model-value="handleFileUpload"`` calls ``handleFileUpload()`` when a file is selected.
 
-``selection slot:`` fileNames is automatically provided by Vuetify in the #selection slot. [more info](https://vuetifyjs.com/en/api/v-file-input/#:~:text=to%20the%20input.-,selection,-%7B%0A%20%20fileNames%3A)
+``selection slot:`` fileNames is automatically provided by Vuetify in the #selection slot.It contains only file names, extracted using { fileNames } 
+[MORE INFO](https://vuetifyjs.com/en/api/v-file-input/#:~:text=to%20the%20input.-,selection,-%7B%0A%20%20fileNames%3A)
 
 ---
 ### Script:
