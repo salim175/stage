@@ -98,11 +98,34 @@ router.post('/upload', (req, res) => {
                 // convert the date
                 const timestamp = moment.tz(dateField, "DD MMM YYYY HH:mm", "Europe/Paris").unix();
 
-                // extract the Body field
-                const splitMail = convertedMail.join("\n").split(/To:.*?\n([\s\S]*)/i);
-                const bodyField = splitMail.length > 1
-                    ? splitMail[1].replace(/>\s*/g, '').trim()
-                    : 'No body found';
+                // Improved body extraction that handles Cc field
+                function extractBody(convertedMail) {
+                    const fullText = convertedMail.join("\n");
+
+                    // Find the last header field (either To or Cc)
+                    const toIndex = fullText.search(/To:.*?\n/i);
+                    const ccIndex = fullText.search(/Cc:.*?\n/i);
+
+                    let startIndex;
+                    if (ccIndex !== -1 && ccIndex > toIndex) {
+                        // If Cc exists and comes after To, start after Cc
+                        startIndex = fullText.indexOf('\n', ccIndex) + 1;
+                    } else {
+                        // If no Cc or Cc comes before To, start after To
+                        startIndex = fullText.indexOf('\n', toIndex) + 1;
+                    }
+
+                    if (startIndex === -1) {
+                        return 'No body found';
+                    }
+
+                    // Extract and clean the body
+                    return fullText.slice(startIndex)
+                        .replace(/>\s*/g, '')
+                        .trim() || 'No body found';
+                }
+
+                const bodyField = extractBody(convertedMail);
 
                 // the regex is only to remove the last extension (.txt, .html )
                 const new_id = file.originalname.replace(/\.[^.]+$/, '');
@@ -207,11 +230,14 @@ Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Body`) from a
 ---
 
 ### 📌 splitMail Explanation
-Since ``.split()`` only works on strings, but convertedMail is an array, we use ``.join("\n")`` to convert the array into a single string before applying ```.split()```.
+Since ``.search()`` only works on strings, but convertedMail is an array, we use ``.join("\n")`` to convert the array into a single string before applying ```.search()```.
 
-``splitMail[0]`` → Everything before "To:" (headers).
+The ``search()`` method returns the index (position) of the first match.
 
-``splitMail[1]`` → Everything after "To:" (the email body).
+- Handle emails with no Cc field (starting after To)
+- Handle emails with a Cc field (starting after Cc)
+- Handle emails where Cc might come before To (still works correctly)
+- Clean up the body text consistently
 
 ---
 
