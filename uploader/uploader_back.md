@@ -33,6 +33,10 @@ const FileSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    ip_address: {
+        type: String,
+        required: true
+    },
     body: {
         type: String,
         required: true
@@ -90,28 +94,39 @@ router.post('/upload', (req, res) => {
                     return match ? match[1].trim() : 'unknown';
                 }
 
-                const fromField = extractField(convertedMail, 'From');
+                function extractFromField(convertedMail) {
+                    const regex_from = /From:.*?<([^<>]+)>/i;
+                    const match_from = convertedMail.find(p => regex_from.test(p))?.match(regex_from);
+                    // console.log('froms: ', match_from) // to see the right index
+                    return match_from ? match_from[1].trim() : 'unknown';
+                }
+
+                function extractIPAddress(subject) {
+                    const regex_IP = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/;
+                    const match_Ip = subject.match(regex_IP);
+                    // console.log('ips: ', match_Ip)
+                    return match_Ip ? match_Ip[0] : 'Unknown';
+                }
+
+                const fromField = extractFromField(convertedMail);
                 const dateField = extractField(convertedMail, 'Date');
                 const subjectField = extractField(convertedMail, 'Subject');
                 const toField = extractField(convertedMail, 'To');
+                const ipField = extractIPAddress(subjectField);
 
                 // convert the date
                 const timestamp = moment.tz(dateField, "DD MMM YYYY HH:mm", "Europe/Paris").unix();
 
-                // Improved body extraction that handles Cc field
                 function extractBody(convertedMail) {
                     const fullText = convertedMail.join("\n");
 
-                    // Find the last header field (either To or Cc)
                     const toIndex = fullText.search(/To:.*?\n/i);
                     const ccIndex = fullText.search(/Cc:.*?\n/i);
 
                     let startIndex;
                     if (ccIndex !== -1 && ccIndex > toIndex) {
-                        // If Cc exists and comes after To, start after Cc
                         startIndex = fullText.indexOf('\n', ccIndex) + 1;
                     } else {
-                        // If no Cc or Cc comes before To, start after To
                         startIndex = fullText.indexOf('\n', toIndex) + 1;
                     }
 
@@ -137,12 +152,14 @@ router.post('/upload', (req, res) => {
                     date: timestamp,
                     subject: subjectField,
                     to: toField,
+                    ip_address: ipField,
                     body: bodyField
                 }
             });
 
+
             try {
-                // skip duplicates → Using { ordered: false }, MongoDB continues inserting even if some _ids already exist.
+                // skip duplicates -> Using { ordered: false }, MongoDB continues inserting even if some _ids already exist.
                 await File.insertMany(fileDocs, { ordered: false });
             } catch (error) {
                 if (error.code === 11000) {
@@ -217,8 +234,8 @@ it's return an array because of ```.map()```
 
 ---
 
-### 📌 `extractField` function
-Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Body`) from an array of email lines.
+### 📌 `extractField`, `extractFromField`, `extractIPAddress` functions
+Extracts a specific email field (`From`, `Date`, `Subject`, `To`, `Ip`,`Body`) from an array of email lines.
 
 - Since `convertedMail` is an **array**, `.find()` **iterates through each element** and checks if it matches the field using regex.
 - If a match is found, `.match(regex)` extracts the value after `:` and trims spaces.

@@ -7,13 +7,11 @@ app.get('/api/file-counts', async (req, res) => {
             {
                 $match: { date: { $exists: true, $ne: null } },
             },
-            {// Convert to Date
-                $addFields: { date: { $toDate: { $multiply: [{ $toLong: "$date" }, 1000] } } },
-            },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-                    count: { $sum: 1 },
+                    // keep the date in timestamp format and convert it to number with $toLong
+                    _id: { $toLong: "$date" },
+                    count: { $sum: 1 }
                 },
             },
             { $sort: { _id: 1 } }
@@ -23,7 +21,7 @@ app.get('/api/file-counts', async (req, res) => {
             {
                 $match: { date: { $exists: true, $ne: null } },
             },
-            {// Convert to Date
+            {// Convert to Date to human readAble
                 $addFields: { date: { $toDate: { $multiply: [{ $toLong: "$date" }, 1000] } } },
             },
             {
