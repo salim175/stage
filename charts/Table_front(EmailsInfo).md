@@ -119,3 +119,7 @@ However, in Vue's template `<template>`, Vue automatically unwraps ref(), so you
 ```html
 <v-list-item-title> {{ fileData?.to }} </v-list-item-title>
 ```
+
+---
+
+- <u>Note:</u> for the reset-filter, the explanation is in the ```chartline_front```
