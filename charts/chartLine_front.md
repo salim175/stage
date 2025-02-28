@@ -200,6 +200,11 @@ const resetFilter = () => {
   selectedDate.value = ""; // ✅ Clears the filter when reset is clicked
 };
 
+<template>
+  <ChartLine @date-selected="handleDateSelected"/>
+  <EmailsInfo :selectedDate="selectedDate" @reset-filter="resetFilter"/>
+</template>
+
 RECIEVED CHILD (EmailsInfo.vue):
 // Receives selectedDate as a prop to filter emails.
 // Emits "reset-filter" to clear selectedDate when the reset button is clicked.
@@ -210,6 +215,7 @@ const props = defineProps({
     default: "",
   },
 });
+<v-btn size="small" class="ml-2" color="#F16E00" @click="$emit('reset-filter')">Show today's file</v-btn>
 
 
 
