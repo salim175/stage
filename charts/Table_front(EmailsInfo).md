@@ -6,8 +6,12 @@ interface FileData {
   from: string | number;
   date: string ;
   ip_address: string;
-  total: string;
+  total?: string;
+  details: '';
 }
+
+const fileData = ref<FileData[]>([]);
+const filteredData = ref<FileData[]>([]);
 
 const props = defineProps({
   selectedDate: {
@@ -16,8 +20,20 @@ const props = defineProps({
   }
 });
 
-const fileData = ref<FileData[]>([]);
-const filteredData = ref<FileData[]>([]);
+interface TableHeader{
+  title: string,
+  key: keyof FileData,
+  align?: "start" | "center" | "end",
+  sortable?: boolean
+}
+
+const headers = computed<TableHeader[]>(() => [
+  { title: `${filteredData.value.length} FROM`, key: "from", align: "start", sortable: true, width: "50%" },
+  { title: "DATE", key: "date", align: "center", sortable: true, width: "16%"  },
+  { title: "IP ADDRESS", key: "ip_address", align: "center", sortable: false, width: "16%"  },
+  { title: "DETAILS", key: "details", align: "center", sortable: false, width: "16%"  },
+]);
+
 
 // Fetch the data
 const fetchFileData = async ()=> {
@@ -30,39 +46,37 @@ const fetchFileData = async ()=> {
   }
 }
 
+// Function to format timestamp to dd/mm/yyyy
+const formatTimestampToDate = (timestamp: number) => {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(timestamp * 1000));
+};
+
 // filter data by date
 const filterDataByDate = () => {
   console.log('Filtering by date:', props.selectedDate);
 
   // get today's date in dd/mm/yyyy Format
-  const todayDate = new Intl.DateTimeFormat("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date());
-  
+  const todayDate = formatTimestampToDate(Date.now() / 1000);
+
   if (!props.selectedDate) {
     // If no date is selected, show Today's files
     filteredData.value = fileData.value.filter(file => {
-      const timestampDate = Number(file.date);
-      const formattedDate = new Intl.DateTimeFormat("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }).format(new Date(timestampDate * 1000));
-
-      return formattedDate === todayDate;
+      const fileDate = formatTimestampToDate(Number(file.date));
+      return fileDate === todayDate;
     });
 
     console.log("Showing today's files:", filteredData.value.length);
   } else {    
     // Filter files by selected date
     filteredData.value = fileData.value.filter(file => {
-      // convert the date of file from fileData array  to number 
-      const timestampDate = Number(file.date)
+      // convert the date of file from fileData array  to number using Number
       // convert the date to compare it with the selected date(the date will still be in timestamp)
-      const formattedDate = new Intl.DateTimeFormat("fr-Fr").format(new Date(timestampDate*1000));
-      return formattedDate === props.selectedDate;
+      const fileDate = formatTimestampToDate(Number(file.date));
+      return fileDate === props.selectedDate;
     });
     
     console.log('Filtered files count:', filteredData.value.length);
@@ -89,8 +103,45 @@ watch(() => props.selectedDate, () => {
 onMounted(()=>{
   fetchFileData();
 })
-</script>
 ```
+
+### Template:
+```js
+<v-data-table
+      :headers="headers"
+      :items="filteredData"
+      :items-per-page="15"
+      class="bordered-table"
+      hover
+      fixed-header
+      density="comfortable"
+      :height="filteredData.length > 0 ? '500px' : '100px'"
+      :sort-by="[{ key: 'date', order: 'asc' }]"
+    >
+
+  <template v-slot:no-data>
+    <div class="empty-table">
+      There is no file uploaded Today
+    </div>
+  </template>
+
+  <template v-slot:item.date="{item}">
+    {{ formatDate(item.date) }}
+  </template>
+
+  <template v-slot:item.details="{ item }">
+    <v-btn color="#F16E00" :to="`/details/${item._id}`">
+      Plus D'infos
+    </v-btn>
+  </template>
+
+  </v-data-table>
+```
+
+### headers and TableHeader:
+
+
+---
 
 **the data in the console will be like:**
 
@@ -105,7 +156,29 @@ onMounted(()=>{
     - filteredData still contains timestamps (item.date).
     - In <td>, formatDate(item.date) is used to convert the timestamp for display.
 
-## Script:
+
+## 📌 filterDataByDate:
+### 1. Logging the Selected Date
+- It logs the selected date (`props.selectedDate`) for debugging.
+
+### 2. Getting Today's Date in `dd/mm/yyyy` Format
+- It uses `formatTimestampToDate(Date.now() / 1000)` to get today’s date.
+
+### 3. If No Date is Selected (`props.selectedDate` is `null` or `undefined`)
+- It filters `fileData.value` to **only include emails from today**.
+- Converts `file.date` (timestamp) to a **formatted date**.
+- Compares the formatted date with today’s date.
+- Stores the filtered data in `filteredData.value`.
+
+### 4. If a Date is Selected (`props.selectedDate` exists)
+- It filters `fileData.value` to **only include emails from the selected date**.
+- Converts `file.date` (timestamp) to a **formatted date**.
+- Compares it with `props.selectedDate`.
+- Stores the filtered data in `filteredData.value`.
+
+---
+
+### <u>some notes:</u>
 if fileData is a ref(Vue Ref), that's mean it is an object that holds the actual data inside value
 
 📌 Explanation

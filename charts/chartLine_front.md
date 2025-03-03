@@ -178,6 +178,22 @@ return Object.entries(grouped).map(([date, count]) => ({
 
 ![the data](/images/image.png) 
 
+## 📌 Computed function:
+```js
+const areaChart1 = computed(() => ({
+  series: [
+    {
+      name: 'Emails',
+      data: groupedDailyData.value.map(item => item.count),
+    }
+  ]
+}));
+```
+- It ensures series updates automatically if fileData.value.daily changes.
+- It prevents unnecessary recalculations when rendering the chart.
+
+
+
 ## 📌 dataPointSelection:
 - ``dataPointIndex``: return the index of selected point in the chart
 - ``selectedData``: is the the data of selected date
