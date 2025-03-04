@@ -176,20 +176,21 @@ onMounted(()=>{
 - Compares it with `props.selectedDate`.
 - Stores the filtered data in `filteredData.value`.
 
----
 
-### <u>some notes:</u>
-if fileData is a ref(Vue Ref), that's mean it is an object that holds the actual data inside value
+## 📌 Some notes:
 
-📌 Explanation
-In script `(<script setup>)`, fileData is a ref(), so you must access .value:
+- ``keyof FileData`` creates a union of the keys in ``FileData`` (``"_id" | "from" | "date" | ...``).
+This ensures that ``key`` in ``TableHeader`` must be one of the actual keys in ``FileData``.
+
+- if fileData is a ref(Vue Ref), that's mean it is an object that holds the actual data inside value
 
 ```ts
+// In script `(<script setup>)`, fileData is a ref(), so you must access .value:
 console.log(fileData.value?.to); // ✅ Correct in script
 ```
-However, in Vue's template `<template>`, Vue automatically unwraps ref(), so you can omit .value:
 
 ```html
+<!-- However, in Vue's template `<template>`, Vue automatically unwraps ref(), so you can omit .value: -->
 <v-list-item-title> {{ fileData?.to }} </v-list-item-title>
 ```
 
