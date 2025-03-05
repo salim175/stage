@@ -225,3 +225,11 @@ const expandedItem = computed(() =>
 - Finds the expanded row by matching ip_address.
 - If expanded.value contains an IP address, it searches groupedData for an item with the same ip_address and returns it.
 - If no row is expanded (expanded = null), it returns undefined.
+
+```js
+const toggleExpand = (item: Mail | GroupedMail) => {
+  expanded.value = expanded.value === item.ip_address ? null : item.ip_address;
+};
+```
+- If the row is already expanded, clicking it closes it (sets expanded = null).
+- If another row is clicked, it updates expanded.value to the clicked item's ip_address
