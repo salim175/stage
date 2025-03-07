@@ -1,6 +1,11 @@
-# 🚀 Git Workflow Guide
+# 🚀 Git Workflow Guide (Cloning and commiting a repository)
 
-## 📌 1. Cloning a Repository
+### Table of content:
+      1. Cloning a Repositor
+      2. Commiting a Repositor
+
+
+# 📌 1. Cloning a Repository
 To start working on an existing project, clone the repository:
 ```bash
 git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
@@ -21,9 +26,9 @@ If GitHub asks for a password while cloning, use a **Personal Access Token (PAT)
    ```bash
    git config --global credential.helper store
    ```
----
 
-## 📝 2. Making Changes and Committing
+
+## 📝 A. Making Changes and Committing
 After making changes, stage and commit them:
 ```bash
 git add .
@@ -46,9 +51,8 @@ The email should match the email associated with your GitHub account.
 
 you can add `--global` for all repositories.
 
----
 
-## ⬆️ 3. Pushing Changes to GitHub
+## ⬆️ B. Pushing Changes to GitHub
 Push your changes to the repository:
 ```bash
 git push origin main  # or your current branch
@@ -69,7 +73,7 @@ Now, `git push` will work automatically in the future.
 
 ---
 
-## 🔄 4. Avoiding Force Push Issues
+## 🔄 C. Avoiding Force Push Issues
 If Git asks you to use `--force`, first try pulling the latest changes:
 ```bash
 git pull --rebase
@@ -78,6 +82,49 @@ git push
 Use `git push --force` **only if you're sure** you want to overwrite remote changes.
 
 ---
+
+# 📌 2. Commiting a Repository
+
+# Git Workflow Guide
+
+```bash
+# Initialize a new Git repository
+$ git init
+
+# Add remote origin
+$ git remote add origin https://tokenName:Token@URL.git
+
+# Check branches
+$ git branch
+# Output example:
+# * master (you may want to rename it to main)
+
+# Fetch latest updates from origin
+$ git fetch origin
+
+# Show all remote branches (e.g., main, master)
+$ git branch -r
+
+# Switch to main branch
+$ git checkout main
+
+$ git add .
+
+# you should to configure you name and email
+$ git config user.name "username"
+$ git config user.email "email"
+
+$ gitcommit -m "your message"
+
+# If my code was pushed to master and needs to be merged into main
+$ git merge master  # Merge master into main
+
+# Delete the master branch locally
+$ git branch -d master
+
+# Delete the master branch from GitLab
+$ git push origin --delete master
+```
 
 ## 📜 Summary of Key Commands
 
