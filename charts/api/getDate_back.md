@@ -26,13 +26,12 @@ app.get('/api/file-counts', async (req, res) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+                    _id: { $dateToString: { format: "%m-%Y", date: "$date", timezone: "Europe/Paris" } },
                     count: { $sum: 1 },
                 },
             },
             { $sort: { _id: 1 } }
         ]);
-
 
         res.json({
             daily: dailyCounts,
@@ -79,3 +78,10 @@ If some documents do not have a date field, they would cause errors in the next 
 
 - Sorts the grouped data in chronological order (1 = oldest to newest).
 - Ensures the chart displays dates correctly (not shuffled).
+
+# 📌 Summary (with example):
+
+| **File ID** | **Original Date (CET/CEST - Paris Time)** | **Stored UNIX Timestamp (UTC)** | **Converted UTC Time** | **MongoDB Default (UTC Grouping - Wrong)** | **MongoDB Grouping with `Europe/Paris` (Correct)** |
+|------------|----------------------------------|------------------------|----------------------|---------------------------------|--------------------------------|
+| **1️⃣** | **Feb 28, 2025 - 23:45 CET** | `1743463500` | **Feb 28, 2025 - 22:45 UTC** | **Grouped as February** ❌ | **Grouped as February** ✅ |
+| **2️⃣** | **Mar 1, 2025 - 00:46 CET** | `1743475600` | **Feb 28, 2025 - 23:46 UTC** | **Grouped as February** ❌ | **Grouped as March** ✅ |
