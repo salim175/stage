@@ -12,14 +12,6 @@ interface Mail {
   details?: Mail[] ;
 }
 
-// define the headers for the table
-interface TableHeader{
-  title: string,
-  key: keyof Mail,
-  align?: "start" | "center" | "end",
-  sortable?: boolean
-}
-
 // Reactive state for fetched data
 const fileData = ref<Mail[]>([]);
 const filteredData = ref<Mail[]>([]);
@@ -31,6 +23,14 @@ const props = defineProps({
     default: ''
   }
 });
+    
+// define the headers for the table
+interface TableHeader{
+  title: string,
+  key: keyof Mail,
+  align?: "start" | "center" | "end",
+  sortable?: boolean
+}
 
 // Fetch function
 const fetchFileData = async () => {
