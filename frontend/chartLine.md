@@ -1,4 +1,4 @@
-# Create a ChartLine and use Store:
+# Create a ChartLine using Store Pinia:
 
 ### Script:
 ```js

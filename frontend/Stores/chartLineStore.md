@@ -1,12 +1,6 @@
 # the Store of the chartline:
 ```js
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import isoWeek from 'dayjs/plugin/isoWeek';
-
-dayjs.extend(isoWeek);
+... code ... 
 
 export const useChartStore = defineStore('chart', () => {
     const fileData = ref<{

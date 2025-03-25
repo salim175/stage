@@ -79,9 +79,63 @@ If some documents do not have a date field, they would cause errors in the next 
 - Sorts the grouped data in chronological order (1 = oldest to newest).
 - Ensures the chart displays dates correctly (not shuffled).
 
-# 📌 Summary (with example):
+##  📌 Summary (with example):
 
 | **File ID** | **Original Date (CET/CEST - Paris Time)** | **Stored UNIX Timestamp (UTC)** | **Converted UTC Time** | **MongoDB Default (UTC Grouping - Wrong)** | **MongoDB Grouping with `Europe/Paris` (Correct)** |
 |------------|----------------------------------|------------------------|----------------------|---------------------------------|--------------------------------|
 | **1️⃣** | **Feb 28, 2025 - 23:45 CET** | `1743463500` | **Feb 28, 2025 - 22:45 UTC** | **Grouped as February** ❌ | **Grouped as February** ✅ |
 | **2️⃣** | **Mar 1, 2025 - 00:46 CET** | `1743475600` | **Feb 28, 2025 - 23:46 UTC** | **Grouped as February** ❌ | **Grouped as March** ✅ |
+
+---
+
+# ExtraOne:
+
+```js
+// get the after @ in email (Name)
+exports.getFromCount = async (req, res) => {
+    try {
+        const mailCounts = await File.aggregate([
+            {
+                $match: {
+                    from: { $exists: true, $ne: null },
+                    ip_address: { $exists: true, $ne: null }
+                },
+            },
+            {
+                $project: {
+                    senderName: {
+                        $arrayElemAt: [
+                            { $split: ["$from", "@"] },
+                            1
+                        ]
+                    },
+                    ip_address: 1
+                }
+            },
+            {
+                $group: {
+                    _id: "$senderName",
+                    count: { $sum: 1 },
+                    attackers: { $addToSet: "$ip_address" }
+                },
+            },
+            { $sort: { count: -1 } }
+        ]);
+
+        res.status(200).json(mailCounts)
+    } catch (error) {
+        console.error('Error fetching from counts:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+
+}
+```
+
+
+| **Pipeline Stage** | **Expression**                                          | **Purpose / What it Does**                                                                 |
+|--------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| `$match`           | `{ from: { $exists: true, $ne: null }, ip_address: { $exists: true, $ne: null } }` | Filters out documents where `from` or `ip_address` is missing or null                      |
+| `$project`         | `{ senderName: { $arrayElemAt: [ { $split: ["$from", "@"] }, 1 ] }, ip_address: 1 }` | Extracts domain name from the email and includes `ip_address`. The `1` means "keep field". |
+| `$group`           | `{ _id: "$senderName", count: { $sum: 1 }, attackers: { $addToSet: "$ip_address" } }` | Groups by domain, counts emails, and collects unique IPs in an array                       |
+| `$sort`            | `{ count: -1 }`                                          | Sorts domains by total count in descending order                                           |
+
