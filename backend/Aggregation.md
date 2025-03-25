@@ -114,10 +114,22 @@ exports.getFromCount = async (req, res) => {
             },
             {
                 $group: {
-                    _id: "$senderName",
-                    count: { $sum: 1 },
-                    attackers: { $addToSet: "$ip_address" }
+                    _id: { sender: "$senderName", ip: "$ip_address" },
+                    ip_count: { $sum: 1 },
+                    // attackers: { $addToSet: "$ip_address" }
                 },
+            },
+            {
+                $group: {
+                    _id: "$_id.sender",
+                    count: { $sum: "$ip_count" },
+                    attackers: {
+                        $push: {
+                            ip: "$_id.ip",
+                            count: "$ip_count"
+                        }
+                    }
+                }
             },
             { $sort: { count: -1 } }
         ]);
@@ -129,13 +141,12 @@ exports.getFromCount = async (req, res) => {
     }
 
 }
+
 ```
-
-
-| **Pipeline Stage** | **Expression**                                          | **Purpose / What it Does**                                                                 |
-|--------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| `$match`           | `{ from: { $exists: true, $ne: null }, ip_address: { $exists: true, $ne: null } }` | Filters out documents where `from` or `ip_address` is missing or null                      |
-| `$project`         | `{ senderName: { $arrayElemAt: [ { $split: ["$from", "@"] }, 1 ] }, ip_address: 1 }` | Extracts domain name from the email and includes `ip_address`. The `1` means "keep field". |
-| `$group`           | `{ _id: "$senderName", count: { $sum: 1 }, attackers: { $addToSet: "$ip_address" } }` | Groups by domain, counts emails, and collects unique IPs in an array                       |
-| `$sort`            | `{ count: -1 }`                                          | Sorts domains by total count in descending order                                           |
-
+| **Pipeline Stage** | **Expression** | **Purpose / What it Does** |
+|--------------------|----------------|-----------------------------|
+| `$match` | `{ from: { $exists: true, $ne: null }, ip_address: { $exists: true, $ne: null } }` | Filters out documents where either `from` or `ip_address` is missing or null. |
+| `$project` | `{ senderName: { $arrayElemAt: [ { $split: ["$from", "@"] }, 1 ] }, ip_address: 1 }` | Extracts the domain from the `from` email field (e.g., `example.com` from `user@example.com`) and includes the IP address. |
+| `$group` | `{ _id: { sender: "$senderName", ip: "$ip_address" }, ip_count: { $sum: 1 } }` | Groups by **both domain and IP**, counting how many emails came from each domain-IP pair. |
+| `$group` | `{ _id: "$_id.sender", count: { $sum: "$ip_count" }, attackers: { $push: { ip: "$_id.ip", count: "$ip_count" } } }` | Regroups by **domain only**, sums up all IP-specific counts to get total per domain, and gathers attacker IPs + their counts into an array. |
+| `$sort` | `{ count: -1 }` | Sorts the result in descending order of total email count per domain. |
