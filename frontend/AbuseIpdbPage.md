@@ -97,8 +97,8 @@ const fetchIpReport = (ip: string) => {
 ```
 
 ## fileData fetched will look Like:
-![alt text](image2.png)
+![alt text](/images/image2.png)
 
 ## the data will be proped like that:
-![alt text](image3.png)
+![alt text](/images/image3.png)
 
