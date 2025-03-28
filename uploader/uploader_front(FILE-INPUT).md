@@ -1,4 +1,4 @@
-# Create file Uploader using Vue.js (vuetify)
+# Create file Uploader using ``<v-file-input/>`` (vuetify)
 
 ### FileUploader.vue (Template):
 ```js
