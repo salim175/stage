@@ -88,7 +88,67 @@ If some documents do not have a date field, they would cause errors in the next 
 
 ---
 
-# ExtraOne:
+# How Write One:
+
+```js
+// group Company aggreagate
+exports.getCompanyCount = async (req, res) => {
+    try {
+        const result = await File.aggregate([
+            {
+                $match: { // scan the db to only allow the files with company and date exist (not null)
+                    company: { $exists: true, $ne: null },
+                    date: { $exists: true, $ne: null }
+                }
+            },
+            {
+                $project: { // to clean the data returned by the api(only extract date and company)
+                    company: 1,
+                date: {                                                                                             ^ end
+                        $dateToString: { /* changing the format of ISO date to yyyy-mm-dd */                        |
+                            format: "%Y-%m-%d",                                                                     |
+                            date: {                                                                                 |
+                                $toDate: { /* convert the ts from ms number to ISO date*/                           |    
+                                    $multiply: [ /* x 1000, because mongodb are in ms, and $toDate expect ms*/      |
+                                        { $toLong: "$date" }, /*string to number*/                                  | start
+                                        1000
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+            {
+                $group: { // group the output by same company name with same date toghether
+                    _id: { company: "$company", date: "$date" }, // why i can't put id instead of _id
+                    count: { $sum: 1 } // make the sum of how many time the caompany with the same date was repeated
+                }
+            },
+            {
+                $project: { // add a second project to organize and control the returning output 
+                    company: "$_id.company",
+                    date: "$_id.date",
+                    count: 1,
+                    _id: 0
+                }
+            },
+            {
+                $sort: { company: 1, date: 1 } // alphabetic for company and ascending for date
+            }
+        ]);
+
+        res.json(result);
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Failed to fetch company chart data.' });
+    }
+}
+```
+
+---
+
+# Another One:
 
 ```js
 // get the after @ in email (Name)
@@ -145,7 +205,6 @@ exports.getFromCount = async (req, res) => {
 ```
 | **Pipeline Stage** | **Expression** | **Purpose / What it Does** |
 |--------------------|----------------|-----------------------------|
-| `$match` | `{ from: { $exists: true, $ne: null }, ip_address: { $exists: true, $ne: null } }` | Filters out documents where either `from` or `ip_address` is missing or null. |
 | `$project` | `{ senderName: { $arrayElemAt: [ { $split: ["$from", "@"] }, 1 ] }, ip_address: 1 }` | Extracts the domain from the `from` email field (e.g., `example.com` from `user@example.com`) and includes the IP address. |
 | `$group` | `{ _id: { sender: "$senderName", ip: "$ip_address" }, ip_count: { $sum: 1 } }` | Groups by **both domain and IP**, counting how many emails came from each domain-IP pair. |
 | `$group` | `{ _id: "$_id.sender", count: { $sum: "$ip_count" }, attackers: { $push: { ip: "$_id.ip", count: "$ip_count" } } }` | Regroups by **domain only**, sums up all IP-specific counts to get total per domain, and gathers attacker IPs + their counts into an array. |
