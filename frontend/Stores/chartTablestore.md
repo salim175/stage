@@ -125,6 +125,26 @@ filteredData.value.forEach((file) => {
 3. If ``file.ip_address`` does not exist in ``ipCount``:
     - ``ipCount[file.ip_address]`` is ``undefined``, so it defaults to **0**, then adds **1**.
 
+### example:
+```js
+const ipCount = {}; // start empty
+
+// file 1
+ipCount['A'] = (undefined || 0) + 1 // => 1
+
+// file 2
+ipCount['A'] = (1 || 0) + 1         // => 2
+
+// file 3
+ipCount['B'] = (undefined || 0) + 1 // => 1
+
+Result:
+ipCount = {
+  A: 2,
+  B: 1
+}
+```
+
         ---
 
 ```js
