@@ -12,6 +12,10 @@ Go to ``Settings → CI/CD → Variables``, you should add 3 variables:
 - GIT_USERNAME: the **TokenName** of deployToken you have created
 - GIT_PASSWORD: the **TokenValue** of deployToken you have created
 - OS_TOKEN: 
+    - oc login --server=https ........... (from OpenShift)
+    - oc get serviceaccount
+    - oc describe sa/cicd
+    - oc describe secret cicd-token-ftkqc
 
 🟢 you don't have to change anything, only add the Key and Value
 
