@@ -35,6 +35,18 @@
     - i use it ``like: watch(source, (newVal, oldVal) => { ... })``
     - Great for running side-effects like API calls, logging, etc.
 
+### 🔁 ``Spread operator (...):``
+```js
+let array1 = ['h', 'e', 'l', 'l', 'o'];
+let array2 = [...array1];
+console.log(array2);
+['h', 'e', 'l', 'l', 'o'] // output
+```
+
+The ``array2`` has the elements of ``array1`` copied into it. Any changes made to array1 will not be reflected in array2 and vice versa.
+
+If the simple assignment operator had been used, then array2 would have been assigned a reference to array1. The changes made in one array would be reflected in the other array, which in most cases is undesirable.
+
 
 # ❌ ERRORs:
 You have this setup:
